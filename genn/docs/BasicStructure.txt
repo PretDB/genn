@@ -1,0 +1,8 @@
+﻿This file describes the basic structure of genn, and describes how does genn work.
+
+
+
+Core of genn is neural cell, which is a class with a input map, output map and an interface works as activation func-
+tion. When working, each cell calculate its output value when all input value in position. When calculation is done, it
+transport this value to the next cell in output map. In this iteration, the whole calculation completed.
+But now, weight and bias tuning is not implied yet, and this step is similar as forward propegation.
