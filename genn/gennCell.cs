@@ -27,6 +27,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Permissions;
+using System.Security.Cryptography.X509Certificates;
+using System.Runtime.CompilerServices;
 
 namespace genn
 {
@@ -34,7 +36,7 @@ namespace genn
 
 	public class gennCell
 	{
-
+		static float learningRate = 0.1f;
 		static public ActiveFunction ActiveFunc;
 		static public ActiveFunction InvActiveFunc;
 		public float outputValue
@@ -49,33 +51,54 @@ namespace genn
 		protected Dictionary<gennCell, float> inputWeight;
 		protected float bias;
 
+		protected Dictionary<gennCell, float> deltaWeight;
+		protected Dictionary<gennCell, float> backError;
+
 
 
 		private int inputCount = 0;
 		private Random randomGenerator;
 
-		public gennCell(Random rand)
+		public gennCell(float bias = 0f)
 		{
-			this.randomGenerator = rand;
+			this.randomGenerator = new Random(DateTime.Now.Millisecond);
 
 			this.inputCells = new HashSet<gennCell>();
 			this.inputCells = new HashSet<gennCell>();
+			this.outputCells = new HashSet<gennCell>();
 			this.inputWeight = new Dictionary<gennCell, float>();
-			this.bias = (float)randomGenerator.NextDouble();
+			this.deltaWeight = new Dictionary<gennCell, float>();
+			this.deltaWeight = new Dictionary<gennCell, float>();
+
+			this.bias = bias;
 		}
 
 
 		#region I/O management
-		public void AddInputCell(gennCell cell)
+		#region Input management
+		public void AddInputCell(gennCell cell, float weight = 0f)
 		{
 			this.inputCells.Add(cell);
-			this.inputWeight.Add(cell, (float)this.randomGenerator.NextDouble());
+			if (weight - 0f < 0.001f)
+			{
+				this.inputWeight.Add(cell, (float)this.randomGenerator.NextDouble());
+			}
+			else
+			{
+				this.inputWeight.Add(cell, weight);
+			}
+			this.deltaWeight.Add(cell, default(float));
+			this.backError.Add(cell, default(float));
 		}
 		public void RemoveInputCell(gennCell cell)
 		{
 			this.outputCells.Remove(cell);
 			this.inputWeight.Remove(cell);
+			this.deltaWeight.Remove(cell);
+			this.backError.Remove(cell);
 		}
+		#endregion
+		#region Output management
 		public void AddOutputCell(gennCell cell)
 		{
 			this.outputCells.Add(cell);
@@ -85,8 +108,9 @@ namespace genn
 			this.outputCells.Remove(cell);
 		}
 		#endregion
+		#endregion
 
-
+		#region Running
 		public void Notation()
 		{
 			if (this.inputCount != this.inputCells.Count)
@@ -96,18 +120,46 @@ namespace genn
 			else
 			{
 				this.inputCount = 0;
+				this.Active();
 			}
 
 		}
-		public void ForceTrig(float thita = 0)
-		{
-			this.Active(thita);
 
+		/// <summary>
+		/// Fixs parameters of this cell with input target value.
+		/// </summary>
+		/// <param name="target">Target value which eaquals to (realValue + Error).</param>
+		public void FixPara(float target)
+		{
+			float de = default(float);
+			float xi = default(float);
+			float wi = default(float);
+
+			de = -gennCell.learningRate * (this.outputValue - target) * gennCell.InvActiveFunc(this.outputValue);
+
+			foreach (gennCell cell in this.inputCells)
+			{
+				xi = this.inputWeight[cell];
+				wi = cell.outputValue;
+
+				this.deltaWeight[cell] = de * xi;
+				this.backError[cell] = de * wi;
+				this.bias += de;
+
+				this.inputWeight[cell] = this.inputWeight[cell] + this.deltaWeight[cell];
+				cell.FixPara(cell.outputValue + this.backError[cell]);
+			}
 		}
 
-		private void Active(float thita = 0)
+		/// <summary>
+		/// Active the neural cell with specified forceInput.
+		/// Then notate cells follows this cell.
+		/// </summary>
+		/// <returns>The active.</returns>
+		/// <param name="forceInput">Force input.</param>
+		public void Active(float forceInput = 0)
 		{
-			float sum = thita;
+			float sum = forceInput;
 			float tmpWeight = 0;
 
 			// get sum
@@ -121,21 +173,33 @@ namespace genn
 			this.outputValue = ActiveFunc(sum);
 
 			// Notation
-			foreach (gennCell cell in outputCells)
+			foreach (gennCell cell in this.outputCells)
 			{
 				cell.Notation();
 			}
+		}
+		#endregion
+
+		public override string ToString()
+		{
+			return string.Format("[gennCell: hash={0}]", this.GetHashCode());
 		}
 
 		~gennCell()
 		{
 			foreach (gennCell cell in this.outputCells)
 			{
-				cell.RemoveInputCell(this);
+				if (cell.inputCells.Count != 0)
+				{
+					cell.RemoveInputCell(this);
+				}
 			}
 			foreach (gennCell cell in this.inputCells)
 			{
-				cell.RemoveOutputCell(this);
+				if (cell.outputCells.Count != 0)
+				{
+					cell.RemoveOutputCell(this);
+				}
 			}
 		}
 	}
