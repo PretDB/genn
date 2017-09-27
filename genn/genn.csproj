@@ -8,6 +8,7 @@
     <RootNamespace>genn</RootNamespace>
     <AssemblyName>genn</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <AssemblyOriginatorKeyFile>..\LICENSE</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,6 +33,7 @@
   <ItemGroup>
     <Compile Include="gennCell.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="gennFrame.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="docs\" />

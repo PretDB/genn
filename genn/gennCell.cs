@@ -34,11 +34,12 @@ namespace genn
 {
 	public delegate float ActiveFunction(float input);
 
-	public class gennCell
+	public class gennCell : IComparable
 	{
 		static float learningRate = 0.1f;
 		static public ActiveFunction ActiveFunc;
 		static public ActiveFunction InvActiveFunc;
+
 		public float outputValue
 		{
 			get;
@@ -57,6 +58,7 @@ namespace genn
 
 
 		private int inputCount = 0;
+		private string ID = "";
 		private Random randomGenerator;
 
 		public gennCell(float bias = 0f)
@@ -68,13 +70,18 @@ namespace genn
 			this.outputCells = new HashSet<gennCell>();
 			this.inputWeight = new Dictionary<gennCell, float>();
 			this.deltaWeight = new Dictionary<gennCell, float>();
-			this.deltaWeight = new Dictionary<gennCell, float>();
+			this.backError = new Dictionary<gennCell, float>();
 
 			this.bias = bias;
 		}
 
 
 		#region I/O management
+		public void AddFlowTo(gennCell cell, float weight = 0f)
+		{
+			this.outputCells.Add(cell);
+			cell.AddInputCell(this, weight);
+		}
 		#region Input management
 		public void AddInputCell(gennCell cell, float weight = 0f)
 		{
@@ -182,7 +189,43 @@ namespace genn
 
 		public override string ToString()
 		{
-			return string.Format("[gennCell: hash={0}]", this.GetHashCode());
+			return this.GetID();
+		}
+		public int CompareTo(object obj)
+		{
+			if (obj == null)
+			{
+				return 1;
+			}
+			gennCell cell = obj as gennCell;
+			if (cell != null)
+			{
+				return this.GetID().CompareTo(cell.GetID());
+			}
+			else
+			{
+				return 1;
+			}
+		}
+		public string GetID()
+		{
+			if (this.ID != "")
+			{
+			}
+			else
+			{
+				this.ID = Guid.NewGuid().ToString("B");
+			}
+			return this.ID;
+		}
+
+		public void Traverse()
+		{
+			foreach (gennCell cell in this.outputCells)
+			{
+				cell.Traverse();
+			}
+			Console.WriteLine(this.ToString());
 		}
 
 		~gennCell()

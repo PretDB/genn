@@ -1,5 +1,5 @@
 ﻿//
-//  Program.cs
+//  gennFrame.cs
 //
 //  Author:
 //       Pret D.B. <pret-db@pret-page.com>
@@ -19,28 +19,35 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 using System;
+using System.Security.Cryptography.X509Certificates;
 using System.Collections.Generic;
-using genn;
-using System.Runtime.CompilerServices;
+using System.Collections;
+using System.Configuration;
 
 namespace genn
 {
-	class MainClass
+	public class gennFrame
 	{
-		static private HashSet<gennCell> layer0 = new HashSet<gennCell>();
-		static private HashSet<gennCell> layer1 = new HashSet<gennCell>();
-		static private HashSet<gennCell> layer2 = new HashSet<gennCell>();
-		public static void Main(string[] args)
+		private ArrayList inputValues;
+		private ArrayList outputValues;
+		private HashSet<gennCell> cells;
+		private HashSet<gennCell> inputCells;
+		private HashSet<gennCell> outputCells;
+
+
+
+		public gennFrame()
 		{
-			gennCell.ActiveFunc = (float input) => (float)(1 / (1 + Math.Exp(-input)));
-			for (int a = 0; a < 2; a++)
-			{
-				gennCell c = new gennCell();
-
-			}
-
-			Console.WriteLine("Hello World!");
+			this.cells = new HashSet<gennCell>();
+			this.inputCells = new HashSet<gennCell>();
+			this.outputCells = new HashSet<gennCell>();
 		}
 
+		public void SetIO(int input, int output)
+		{
+			for (int a = 0; a < input; a++)
+			{
+			}
+		}
 	}
 }
